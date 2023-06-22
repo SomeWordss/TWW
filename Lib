@@ -2,6 +2,8 @@ local WhiteColor = Color3.fromRGB(206, 206, 206)
 local ReallyWhiteColor = Color3.fromRGB(255, 255, 255)
 local BlackColor = Color3.fromRGB(30, 30, 30)
 
+local DestroyUIButton = false
+
 _G.JxereasExistingHooks = _G.JxereasExistingHooks or {}
 if not _G.JxereasExistingHooks.GuiDetectionBypass then
     local CoreGui = game.CoreGui
@@ -211,6 +213,7 @@ local function createOriginialElements()
 		local minus = Instance.new("ImageButton")
 		local minusAspect = Instance.new("UIAspectRatioConstraint")
 		local close = Instance.new("ImageButton")
+		close.Visible = DestroyUIButton
 		local closeAspect = Instance.new("UIAspectRatioConstraint")
 		local headingCornerHiding = Instance.new("Frame")
 		local headingSeperator = Instance.new("Frame")
