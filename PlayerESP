@@ -1,3 +1,9 @@
+assert(Drawing, 'exploit not supported')
+
+if not syn and not PROTOSMASHER_LOADED then print'Unnamed ESP only officially supports Synapse and Protosmasher! If you\'re an exploit developer and have added drawing API to your exploit, try setting syn as true then checking if that works, otherwise, DM me on discord @ cppbook.org#1968 or add an issue to the Unnamed ESP Github Repository and I\'ll see it through email!' end
+
+if not cloneref then cloneref = function(o) return o end end
+
 local UserInputService = cloneref(game:GetService'UserInputService')
 local HttpService = cloneref(game:GetService'HttpService')
 local TweenService = cloneref(game:GetService'TweenService')
@@ -13,7 +19,7 @@ local WorldToViewport = function(...) return WTVP(Camera, ...) end
 local Menu = {}
 local MouseHeld = false
 local LastRefresh = 0
-local OptionsFile = 'WXESP.dat'
+local OptionsFile = 'IC3_ESP_SETTINGS.dat'
 local Binding = false
 local BindedKey = nil
 local OIndex = 0
@@ -28,8 +34,8 @@ local DragOffset = V2New()
 local DraggingWhat = nil
 local OldData = {}
 local IgnoreList = {}
-local EnemyColor = Color3.new(255, 255, 255)
-local TeamColor = Color3.new(255, 255, 255)
+local EnemyColor = Color3.new(1, 0, 0)
+local TeamColor = Color3.new(0, 1, 0)
 local MenuLoaded = false
 local ErrorLogging = false
 local TracerPosition = V2New(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y - 135)
@@ -39,9 +45,6 @@ local IsSynapse = syn and not PROTOSMASHER_LOADED
 local Connections = { Active = {} }
 local Signal = {} Signal.__index = Signal
 local GetCharacter, CurrentColorPicker, Spectating
-
-_G.XESPBoxNamesESP = false
-_G.XESPBoxNamesBoxes = false
 
 local QUAD_SUPPORTED_EXPLOIT = pcall(function() Drawing.new('Quad'):Remove() end)
 
@@ -620,7 +623,20 @@ function NewDrawing(InstanceName)
 end
 
 function Menu:AddMenuInstance(Name, DrawingType, Properties)
-    --Nothing
+	local Instance;
+
+	if shared.MenuDrawingData.Instances[Name] ~= nil then
+		Instance = shared.MenuDrawingData.Instances[Name];
+		for i, v in pairs(Properties) do
+			pcall(Set, Instance, i, v);
+		end
+	else
+		Instance = NewDrawing(DrawingType)(Properties);
+	end
+
+	shared.MenuDrawingData.Instances[Name] = Instance;
+
+	return Instance;
 end
 function Menu:UpdateMenuInstance(Name)
 	local Instance = shared.MenuDrawingData.Instances[Name];
@@ -715,39 +731,25 @@ function Load()
 	end
 end
 
-XUpdateESPOptions = nil
-XUpdateESPOptions = RunService.RenderStepped:Connect(function()
-    if _G.XESPBoxNamesESP == true then
-        Options.Enabled.Value = true
-    else
-        Options.Enabled.Value = false
-    end
-    if _G.XESPBoxNamesBoxes == true then
-        Options.ShowBoxes.Value = true
-    else
-        Options.ShowBoxes.Value = false
-    end
-end)
-
 Options('Enabled', 'ESP Enabled', true);
 Options('ShowTeam', 'Show Team', true);
 Options('ShowTeamColor', 'Show Team Color', false);
 Options('ShowName', 'Show Names', true);
-Options('ShowDistance', 'Show Distance', false);
-Options('ShowHealth', 'Show Health', false);
+Options('ShowDistance', 'Show Distance', true);
+Options('ShowHealth', 'Show Health', true);
 Options('ShowBoxes', 'Show Boxes', true);
-Options('ShowTracers', 'Show Tracers', false);
+Options('ShowTracers', 'Show Tracers', true);
 Options('ShowDot', 'Show Head Dot', false);
 Options('VisCheck', 'Visibility Check', false);
 Options('Crosshair', 'Crosshair', false);
 Options('TextOutline', 'Text Outline', true);
 -- Options('Rainbow', 'Rainbow Mode', false);
 Options('TextSize', 'Text Size', syn and 18 or 14, 10, 24); -- cuz synapse fonts look weird???
-Options('MaxDistance', 'Max Distance', 2500000, 1000000, 2500000);
+Options('MaxDistance', 'Max Distance', 2500, 100, 25000);
 Options('RefreshRate', 'Refresh Rate (ms)', 5, 1, 200);
 Options('YOffset', 'Y Offset', 0, -200, 200);
-Options('MenuKey', 'Menu Key', nil, 1);
-Options('ToggleKey', 'Toggle Key', nil, 1);
+Options('MenuKey', 'Menu Key', Enum.KeyCode.F4, 1);
+Options('ToggleKey', 'Toggle Key', Enum.KeyCode.F3, 1);
 Options('ChangeColors', SENTINEL_LOADED and 'Sentinel Unsupported' or 'Change Colors', function()
 	if SENTINEL_LOADED then return end
 
@@ -843,7 +845,7 @@ function LineBox:Create(Properties)
 
 	local Properties = Combine({
 		Transparency	= 1;
-		Thickness		= 2;
+		Thickness		= 3;
 		Visible			= true;
 	}, Properties);
 
@@ -920,6 +922,7 @@ function LineBox:Create(Properties)
 			Square.Visible = Vs;
 			Square.Position = V2New(xMin, yMin);
 			Square.Color	= Color;
+			Square.Thickness = math.floor(Outline.Thickness * 0.3);
 			-- Square.Position = V2New(xMin, yMin);
 			Square.Size = V2New(xSize, ySize);
 			Outline.Position = Square.Position;
@@ -1396,6 +1399,48 @@ function SubMenu:Show(Position, Title, Options)
 
 	self.Bounds = { BasePosition.X, BasePosition.Y, End.X, End.Y };
 
+	delay(0.025, function()
+		if not self.Open then return; end
+
+		Menu:AddMenuInstance('Sub-Main', 'Square', {
+			Size		= BaseSize;
+			Position	= BasePosition;
+			Filled		= false;
+			Color		= Colors.Primary.Main;
+			Thickness	= 3;
+			Visible		= Visible;
+		});
+	end);
+	Menu:AddMenuInstance('Sub-TopBar', 'Square', {
+		Position	= BasePosition;
+		Size		= V2New(BaseSize.X, 10);
+		Color		= Colors.Primary.Dark;
+		Filled		= true;
+		Visible		= Visible;
+	});
+	Menu:AddMenuInstance('Sub-TopBarTwo', 'Square', {
+		Position 	= BasePosition + V2New(0, 10);
+		Size		= V2New(BaseSize.X, 20);
+		Color		= Colors.Primary.Main;
+		Filled		= true;
+		Visible		= Visible;
+	});
+	Menu:AddMenuInstance('Sub-TopBarText', 'Text', {
+		Size 		= 20;
+		Position	= shared.MenuDrawingData.Instances['Sub-TopBarTwo'].Position + V2New(15, -3);
+		Text		= Title or '';
+		Color		= Colors.Secondary.Light;
+		Visible		= Visible;
+	});
+	Menu:AddMenuInstance('Sub-Filling', 'Square', {
+		Size		= BaseSize - V2New(0, 30);
+		Position	= BasePosition + V2New(0, 30);
+		Filled		= true;
+		Color		= Colors.Secondary.Main;
+		Transparency= .75;
+		Visible		= Visible;
+	});
+
 	if Options then
 		for Index, Option in pairs(Options) do -- currently only supports color and button(but color is a button so), planning on fully rewriting or something
 			local function GetName(Name) return ('Sub-%s.%d'):format(Name, Index) end
@@ -1494,6 +1539,72 @@ function CreateMenu(NewPosition) -- Create Menu
 
 	BasePosition = V2New(math.clamp(BasePosition.X, 0, Camera.ViewportSize.X), math.clamp(BasePosition.Y, 0, Camera.ViewportSize.Y));
 
+	Menu:AddMenuInstance('CrosshairX', 'Line', {
+		Visible			= false;
+		Color			= Color3.new(0, 1, 0);
+		Transparency	= 1;
+		Thickness		= 1;
+	});
+	Menu:AddMenuInstance('CrosshairY', 'Line', {
+		Visible			= false;
+		Color			= Color3.new(0, 1, 0);
+		Transparency	= 1;
+		Thickness		= 1;
+	});
+
+	delay(.025, function() -- since zindex doesnt exist
+		Menu:AddMenuInstance('Main', 'Square', {
+			Size		= BaseSize;
+			Position	= BasePosition;
+			Filled		= false;
+			Color		= Colors.Primary.Main;
+			Thickness	= 3;
+			Visible		= true;
+		});
+	end);
+	Menu:AddMenuInstance('TopBar', 'Square', {
+		Position	= BasePosition;
+		Size		= V2New(BaseSize.X, 15);
+		Color		= Colors.Primary.Dark;
+		Filled		= true;
+		Visible		= true;
+	});
+	Menu:AddMenuInstance('TopBarTwo', 'Square', {
+		Position 	= BasePosition + V2New(0, 15);
+		Size		= V2New(BaseSize.X, 45);
+		Color		= Colors.Primary.Main;
+		Filled		= true;
+		Visible		= true;
+	});
+	Menu:AddMenuInstance('TopBarText', 'Text', {
+		Size 		= 25;
+		Position	= shared.MenuDrawingData.Instances.TopBarTwo.Position + V2New(25, 10);
+		Text		= 'Unnamed ESP';
+		Color		= Colors.Secondary.Light;
+		Visible		= true;
+		Transparency= 1; -- proto outline fix
+		Outline 	= true;
+		OutlineOpacity = 0.5;
+	});
+	Menu:AddMenuInstance('TopBarTextBR', 'Text', {
+		Size 		= 18;
+		Position	= shared.MenuDrawingData.Instances.TopBarTwo.Position + V2New(BaseSize.X - 75, 25);
+		Text		= 'by ic3w0lf';
+		Color		= Colors.Secondary.Light;
+		Visible		= true;
+		Transparency= 1;
+		Outline 	= true;
+		OutlineOpacity = 0.5;
+	});
+	Menu:AddMenuInstance('Filling', 'Square', {
+		Size		= BaseSize - V2New(0, 60);
+		Position	= BasePosition + V2New(0, 60);
+		Filled		= true;
+		Color		= Colors.Secondary.Main;
+		Transparency= .35;
+		Visible		= true;
+	});
+
 	local CPos = 0;
 
 	GetTableData(Options)(function(i, v)
@@ -1545,6 +1656,7 @@ function CreateMenu(NewPosition) -- Create Menu
 			local Line			= Menu:AddMenuInstance(Format('%s_SliderLine', v.Name), 'Square', {
 				Transparency	= 1;
 				Color			= Colors.Secondary.Light;
+				-- Thickness		= 3;
 				Filled			= true;
 				Visible			= true;
 				Position 		= BasePosition + V2New(15, -5);
@@ -1731,6 +1843,52 @@ shared.UESP_InputChangedCon = UserInputService.InputChanged:Connect(function(inp
 				v:ShowValue(true);
 			else
 				if not MouseHeld then v:ShowValue(false); end
+			end
+		end
+	end
+end)
+shared.UESP_InputBeganCon = UserInputService.InputBegan:Connect(function(input)
+	if input.UserInputType.Name == 'MouseButton1' and Options.MenuOpen.Value then
+		MouseHeld = true;
+		local Bar = Menu:GetInstance'TopBar';
+		local Values = {
+			Bar.Position.X;
+			Bar.Position.Y;
+			Bar.Position.X + Bar.Size.X;
+			Bar.Position.Y + Bar.Size.Y;
+		}
+		if MouseHoveringOver(Values) then
+			DraggingUI = true;
+			DragOffset = Menu:GetInstance'Main'.Position - GetMouseLocation();
+		else
+			for i, v in pairs(Sliders) do
+				local Values = {
+					v.Line.Position.X;
+					v.Line.Position.Y;
+					v.Line.Position.X + v.Line.Size.X;
+					v.Line.Position.Y + v.Line.Size.Y;
+					-- v.Line.From.X	- (v.Slider.Radius);
+					-- v.Line.From.Y	- (v.Slider.Radius);
+					-- v.Line.To.X		+ (v.Slider.Radius);
+					-- v.Line.To.Y		+ (v.Slider.Radius);
+				};
+				if MouseHoveringOver(Values) then
+					DraggingWhat = v;
+					Dragging = true;
+					break
+				end
+			end
+
+			if not Dragging then
+				local Values = {
+					TracerPosition.X - 10;
+					TracerPosition.Y - 10;
+					TracerPosition.X + 10;
+					TracerPosition.Y + 10;
+				};
+				if MouseHoveringOver(Values) then
+					DragTracerPosition = true;
+				end
 			end
 		end
 	end
@@ -2111,10 +2269,10 @@ local function UpdatePlayerData()
 		for i, v in pairs(Players:GetPlayers()) do
 			local Data = shared.InstanceData[v.Name] or { Instances = {}; };
 
-			Data.Instances['Box'] = Data.Instances['Box'] or LineBox:Create{Thickness = 2};
+			Data.Instances['Box'] = Data.Instances['Box'] or LineBox:Create{Thickness = 4};
 			Data.Instances['OutlineTracer'] = Data.Instances['OutlineTracer'] or NewDrawing'Line'{
 				Transparency	= 1;
-				Thickness		= 2;
+				Thickness		= 3;
 				Color			= Color3.new(0.1, 0.1, 0.1);
 			}
 			Data.Instances['Tracer'] = Data.Instances['Tracer'] or NewDrawing'Line'{
@@ -2332,6 +2490,94 @@ local function Update()
 				end
 			end
 		end
+	end
+
+	local CX = Menu:GetInstance'CrosshairX';
+	local CY = Menu:GetInstance'CrosshairY';
+	
+	if Options.Crosshair.Value then
+		CX.Visible = true;
+		CY.Visible = true;
+
+		CX.To = V2New((Camera.ViewportSize.X / 2) - 8, (Camera.ViewportSize.Y / 2));
+		CX.From = V2New((Camera.ViewportSize.X / 2) + 8, (Camera.ViewportSize.Y / 2));
+		CY.To = V2New((Camera.ViewportSize.X / 2), (Camera.ViewportSize.Y / 2) - 8);
+		CY.From = V2New((Camera.ViewportSize.X / 2), (Camera.ViewportSize.Y / 2) + 8);
+	else
+		CX.Visible = false;
+		CY.Visible = false;
+	end
+
+	if Options.MenuOpen.Value and MenuLoaded then
+		local MLocation = GetMouseLocation();
+		shared.MenuDrawingData.Instances.Main.Color = Color3.fromHSV(tick() * 24 % 255/255, 1, 1);
+		local MainInstance = Menu:GetInstance'Main';
+		
+		local Values = {
+			MainInstance.Position.X;
+			MainInstance.Position.Y;
+			MainInstance.Position.X + MainInstance.Size.X;
+			MainInstance.Position.Y + MainInstance.Size.Y;
+		};
+		
+		if MainInstance and (MouseHoveringOver(Values) or (SubMenu.Open and MouseHoveringOver(SubMenu.Bounds))) then
+			Debounce.CursorVis = true;
+			
+			Menu:UpdateMenuInstance'Cursor1'{
+				Visible	= true;
+				From	= V2New(MLocation.x, MLocation.y);
+				To		= V2New(MLocation.x + 5, MLocation.y + 6);
+			}
+			Menu:UpdateMenuInstance'Cursor2'{
+				Visible	= true;
+				From	= V2New(MLocation.x, MLocation.y);
+				To		= V2New(MLocation.x, MLocation.y + 8);
+			}
+			Menu:UpdateMenuInstance'Cursor3'{
+				Visible	= true;
+				From	= V2New(MLocation.x, MLocation.y + 6);
+				To		= V2New(MLocation.x + 5, MLocation.y + 5);
+			}
+		else
+			if Debounce.CursorVis then
+				Debounce.CursorVis = false;
+				
+				Menu:UpdateMenuInstance'Cursor1'{Visible = false};
+				Menu:UpdateMenuInstance'Cursor2'{Visible = false};
+				Menu:UpdateMenuInstance'Cursor3'{Visible = false};
+			end
+		end
+		if MouseHeld then
+			local MousePos = GetMouseLocation();
+
+			if Dragging then
+				DraggingWhat.Slider.Position = V2New(math.clamp(MLocation.X - DraggingWhat.Slider.Size.X / 2, DraggingWhat.Line.Position.X, DraggingWhat.Line.Position.X + DraggingWhat.Line.Size.X - DraggingWhat.Slider.Size.X), DraggingWhat.Slider.Position.Y);
+				local Percent	= (DraggingWhat.Slider.Position.X - DraggingWhat.Line.Position.X) / ((DraggingWhat.Line.Position.X + DraggingWhat.Line.Size.X - DraggingWhat.Line.Position.X) - DraggingWhat.Slider.Size.X);
+				local Value		= CalculateValue(DraggingWhat.Min, DraggingWhat.Max, Percent);
+				DraggingWhat.Option(Value);
+			elseif DraggingUI then
+				Debounce.UIDrag = true;
+				local Main = Menu:GetInstance'Main';
+				Main.Position = MousePos + DragOffset;
+			elseif DragTracerPosition then
+				TracerPosition = MousePos;
+			end
+		else
+			Dragging = false;
+			DragTracerPosition = false;
+			if DraggingUI and Debounce.UIDrag then
+				Debounce.UIDrag = false;
+				DraggingUI = false;
+				CreateMenu(Menu:GetInstance'Main'.Position);
+			end
+		end
+		if not Debounce.Menu then
+			Debounce.Menu = true;
+			ToggleMenu();
+		end
+	elseif Debounce.Menu and not Options.MenuOpen.Value then
+		Debounce.Menu = false;
+		ToggleMenu();
 	end
 end
 
