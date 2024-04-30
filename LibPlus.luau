@@ -3065,8 +3065,7 @@ function elementHandler:BindToggle(toggleName: string, callback, defaultKey: str
 	toggleInstance.Parent = ConstrainFrame
 	toggleInstance.ToggleText.Size = UDim2.new(1,-(toggleInstance.BoxBackground.AbsoluteSize.X + textOffset),1,0)
 	toggleInstance.Position = UDim2.fromOffset(toggleInstance.BoxBackground.AbsoluteSize.X + textOffset,0)
-	toggleInstance.ToggleText.ZIndex = 1
-	toggleInstance.ZIndex = 1
+	toggleInstance.ZIndex = 2
 	-- Bind --
 	local keybind = setmetatable({}, keybindHandler)
 	local keybindInstance = originalElements.Keybind:Clone()
@@ -3169,7 +3168,7 @@ function elementHandler:BindToggle(toggleName: string, callback, defaultKey: str
 	UserInputService.InputBegan:Connect(onInputBegan)
 	keybindInstance.MouseButton1Click:Connect(onKeybindClick)
 	
-	keybindInstance.KeybindText.Text = toggleName
+	keybindInstance.KeybindText.Text = ""
 	keybindInstance.BoxBackground.InnerBox.KeyText.Text = defaultKey
 	
 	defaultKey = getMatchingKeyCodeFromName(defaultKey)
@@ -3178,7 +3177,7 @@ function elementHandler:BindToggle(toggleName: string, callback, defaultKey: str
 	originialOffsetSize = keybindInstance.BoxBackground.AbsoluteSize
 	keybindInstance.BoxBackground.Size = UDim2.fromOffset(originialOffsetSize.X,originialOffsetSize.Y)
 	keybindInstance.BoxBackground.BoxAspect:Destroy()
-	keybindInstance.KeybindText.Visible = false
+	keybindInstance.KeybindText.Size = UDim2.new(0,0,1,0)
 	keybindInstance.ZIndex = 2
 
 	return toggle, keybind
