@@ -3017,6 +3017,7 @@ function elementHandler:BindToggle(toggleName: string, callback, defaultKey: str
 	local UIListLayout = Instance.new("UIListLayout")
 	UIListLayout.Parent = ConstrainFrame
 	UIListLayout.FillDirection = "Horizontal"
+	UIListLayout.SortOrder = "LayoutOrder"
 	-- Button --
 	local toggle = setmetatable({}, toggleHandler)
 	local toggleInstance = originalElements.Toggle:Clone()
@@ -3065,6 +3066,7 @@ function elementHandler:BindToggle(toggleName: string, callback, defaultKey: str
 	toggleInstance.Parent = ConstrainFrame
 	toggleInstance.ToggleText.Size = UDim2.new(1,-(toggleInstance.BoxBackground.AbsoluteSize.X + textOffset),1,0)
 	toggleInstance.Position = UDim2.fromOffset(toggleInstance.BoxBackground.AbsoluteSize.X + textOffset,0)
+	toggleInstance.Size = UDim2.new(0.5,0,1,0)
 	toggleInstance.LayoutOrder = 1
 	-- Bind --
 	local keybind = setmetatable({}, keybindHandler)
