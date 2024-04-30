@@ -3012,7 +3012,7 @@ end
 function elementHandler:BindToggle(toggleName: string, callback, defaultKey: string): table
 	local ConstrainFrame = Instance.new("Frame")
 	ConstrainFrame.Parent = self.ElementToParentChildren
-	ConstrainFrame.Size = UDim2.new(1,0,0,100)
+	ConstrainFrame.Size = UDim2.new(1,0,0,10)
 	ConstrainFrame.Transparency = 1
 	local UIListLayout = Instance.new("UIListLayout")
 	UIListLayout.Parent = ConstrainFrame
@@ -3069,7 +3069,7 @@ function elementHandler:BindToggle(toggleName: string, callback, defaultKey: str
 	local keybind = setmetatable({}, keybindHandler)
 	local keybindInstance = originalElements.Keybind:Clone()
 	local sideClosedTextPaddingPixels = 1
-	local keybindTextPadding = 4
+	local keybindTextPadding = 0
 	local isOverriding = false
 	local inputBeingProcessed
 	local originialOffsetSize
@@ -3177,6 +3177,7 @@ function elementHandler:BindToggle(toggleName: string, callback, defaultKey: str
 	keybindInstance.BoxBackground.Size = UDim2.fromOffset(originialOffsetSize.X,originialOffsetSize.Y)
 	keybindInstance.BoxBackground.BoxAspect:Destroy()
 	keybindInstance.KeybindText.Size = UDim2.new(1,-(originialOffsetSize.X + keybindTextPadding),1,0)
+	keybindInstance.ZIndex = 2
 
 	return toggle, keybind
 end
