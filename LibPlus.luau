@@ -3012,7 +3012,8 @@ end
 function elementHandler:BindToggle(toggleName: string, callback, defaultKey: string): table
 	local ConstrainFrame = Instance.new("Frame")
 	ConstrainFrame.Parent = self.ElementToParentChildren
-	ConstrainFrame.Size = UDim2.new(1,0,1,0)
+	ConstrainFrame.Size = UDim2.new(1,0,0,100)
+	ConstrainFrame.Transparency = 1
 	local UIListLayout = Instance.new("UIListLayout")
 	UIListLayout.Parent = ConstrainFrame
 	UIListLayout.FillDirection = "Horizontal"
