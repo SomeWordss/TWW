@@ -3177,7 +3177,7 @@ function elementHandler:BindToggle(toggleName: string, callback, defaultKey: str
 	originialOffsetSize = keybindInstance.BoxBackground.AbsoluteSize
 	keybindInstance.BoxBackground.Size = UDim2.fromOffset(originialOffsetSize.X,originialOffsetSize.Y)
 	keybindInstance.BoxBackground.BoxAspect:Destroy()
-	keybindInstance.KeybindText.Size = UDim2.new(0,0,1,0)
+	keybindInstance.KeybindText:Destroy()
 	keybindInstance.ZIndex = 2
 
 	return toggle, keybind
