@@ -2557,6 +2557,7 @@ function elementHandler:Button(buttonName: string, callback): table -- Add Callb
 	buttonInstance.Parent = self.ElementToParentChildren
 	buttonInstance.ButtonText.Size = UDim2.new(1,-(buttonInstance.CircleBackground.AbsoluteSize.X + textOffset),1,0)
 	buttonInstance.ButtonText.Position = UDim2.fromOffset(buttonInstance.CircleBackground.AbsoluteSize.X + textOffset,0)
+	return button
 end
 
 function elementHandler:Dropdown(dropdownName: string): table
